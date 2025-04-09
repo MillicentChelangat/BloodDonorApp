@@ -4,13 +4,11 @@ public class User {
     private String name;
     private String email;
     private String password;
-    private String bloodType;
 
-    public User(String name, String email, String password, String bloodType) {
+    public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.bloodType = bloodType;
     }
 
     // Getters and setters
@@ -22,7 +20,4 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-
-    public String getBloodType() { return bloodType; }
-    public void setBloodType(String bloodType) { this.bloodType = bloodType; }
 }

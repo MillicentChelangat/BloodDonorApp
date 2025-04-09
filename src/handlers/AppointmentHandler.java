@@ -17,7 +17,6 @@ public class AppointmentHandler {
 
         int centerId = -1;
 
-        // Get the center_id from the centers table
         String getCenterIdQuery = "SELECT id FROM centers WHERE name = ?";
         try (PreparedStatement stmt = conn.prepareStatement(getCenterIdQuery)) {
             stmt.setString(1, centerName);
@@ -33,6 +32,7 @@ public class AppointmentHandler {
             System.out.println("Error fetching center ID: " + e.getMessage());
             return false;
         }
+
         String checkDuplicateQuery = "SELECT id FROM appointments WHERE donor_id = ? AND center_id = ? AND appointment_date = ?";
         try (PreparedStatement stmt = conn.prepareStatement(checkDuplicateQuery)) {
             stmt.setInt(1, donorId);
@@ -49,7 +49,6 @@ public class AppointmentHandler {
             return false;
         }
 
-        // Insert the appointment using center_id
         String insertQuery = "INSERT INTO appointments (donor_id, center_id, appointment_date) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
             stmt.setInt(1, donorId);
@@ -60,9 +59,8 @@ public class AppointmentHandler {
             if (rowsAffected > 0) {
                 System.out.println("Appointment successfully booked!");
 
-                // 🔹 Send notification after booking appointment
-                NotificationHandler.addNotification(donorId,
-                        " Your appointment at " + centerName + " is confirmed for " + appointmentDate + ".");
+                String confirmationMessage = "Your appointment at " + centerName + " is confirmed for " + appointmentDate + ".";
+                NotificationHandler.sendNotification(donorId, confirmationMessage);
 
                 return true;
             } else {
@@ -74,41 +72,4 @@ public class AppointmentHandler {
             return false;
         }
     }
-
-    public static void viewAppointments(int donorId) {
-        Connection conn = DatabaseConnection.getConnection();
-        if (conn == null) {
-            System.out.println("Database connection failed!");
-            return;
-        }
-
-        String query = "SELECT a.id, c.name AS center_name, a.appointment_date " +
-                "FROM appointments a " +
-                "JOIN centers c ON a.center_id = c.id " +
-                "WHERE a.donor_id = ? " +
-                "ORDER BY a.appointment_date ASC";
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, donorId);
-            ResultSet rs = stmt.executeQuery();
-
-            System.out.println("\n=== Your Appointments ===");
-            boolean hasAppointments = false;
-            while (rs.next()) {
-                hasAppointments = true;
-                System.out.println("Appointment ID: " + rs.getInt("id"));
-                System.out.println("Center: " + rs.getString("center_name"));
-                System.out.println("Date: " + rs.getString("appointment_date"));
-                System.out.println("-------------------------");
-            }
-
-            if (!hasAppointments) {
-                System.out.println("You have no upcoming appointments.");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error fetching appointments: " + e.getMessage());
-        }
-    }
-
-
 }
